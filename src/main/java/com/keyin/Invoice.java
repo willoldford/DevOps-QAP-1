@@ -1,2 +1,4 @@
-package com.keyin;public class Invoice {
+package com.keyin;
+
+public class Invoice {
 }
