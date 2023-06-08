@@ -35,7 +35,7 @@ public class SuggestionEngine {
      * Look up the passed in word in the Map of words loaded from the source file.
      */
     private Stream<String> known(Stream<String> words) {
-        return words.filter( (word) -> wordMap.containsKey(word) );
+        return words.filter( (word) -> getWordMap().containsKey(word) );
     }
 
     /**
@@ -46,17 +46,19 @@ public class SuggestionEngine {
      */
     public void loadDictionaryData(Path dictionaryFile) throws IOException {
         Stream.of(new String(Files.readAllBytes( dictionaryFile )).toLowerCase().split("\\n")).forEach( (word) ->{
-            wordMap.compute( word, (k, v) -> v == null ? 1 : v + 1  );
+            getWordMap().compute( word, (k, v) -> v == null ? 1 : v + 1  );
         });
     }
 
+
+
     /**
-     * Will generate a list of suggested ocrrections, limited by the top 10 most likely for the given word.
+     * Will generate a list of suggested corrections, limited by the top 10 most likely for the given word.
      * @param word the word to find correction suggestions for
      * @return a String of words delimited by '\n' or an empty string if word is correct
      */
     public String generateSuggestions(String word) {
-        if (wordMap.containsKey(word)) {
+        if (getWordMap().containsKey(word)) {
             return "";
         }
 
@@ -75,6 +77,10 @@ public class SuggestionEngine {
                         .thenComparing(Collator.getInstance()))
                 .limit(10) // limit to top 10 suggestions to keep list consumable
                 .collect(Collectors.joining("\n"));
+    }
+
+    public Map<String, Integer> getWordMap() {
+        return wordMap;
     }
 
     public static void main(String[] args) throws Exception {

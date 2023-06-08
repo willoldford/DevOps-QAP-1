@@ -1,28 +1,34 @@
 package com.keyin;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@ExtendWith(MockitoExtension.class)
 public class SuggestionEngineTest {
+    private SuggestionEngine suggestionEngine = new SuggestionEngine();
+    private boolean testInstanceSame = false;
+
     @Test
     public void testGenerateSuggestions() throws Exception {
-        SuggestionEngine suggestionEngine = new SuggestionEngine();
+        suggestionEngine.loadDictionaryData( Paths.get( ClassLoader.getSystemResource("words.txt").getPath()));
 
-        suggestionEngine.loadDictionaryData( Path.of("words.txt"));
-
-        Assert.assertTrue(suggestionEngine.generateSuggestions("hellw").contains("hello"));
+//        Assertions.assertTrue(testInstanceSame);
+        Assertions.assertTrue(suggestionEngine.generateSuggestions("hellw").contains("hello"));
     }
 
     @Test
     public void testGenerateSuggestionsFail() throws Exception {
-        SuggestionEngine suggestionEngine = new SuggestionEngine();
+        suggestionEngine.loadDictionaryData( Paths.get( ClassLoader.getSystemResource("words.txt").getPath()));
 
-        suggestionEngine.loadDictionaryData( Path.of("words.txt"));
-
-        Assert.assertFalse(suggestionEngine.generateSuggestions("hello").contains("hello"));
+        testInstanceSame = true;
+        Assertions.assertTrue(testInstanceSame);
+        Assertions.assertFalse(suggestionEngine.generateSuggestions("hello").contains("hello"));
     }
 }
