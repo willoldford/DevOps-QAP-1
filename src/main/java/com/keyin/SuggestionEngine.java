@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Collator;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -14,7 +13,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SuggestionEngine {
-    private Map<String,Integer> wordMap = new HashMap<>();
+    private SuggestionsDatabase wordSuggestionDB;
 
     /**
      *   Based on algorithm from http://norvig.com/spell-correct.html
@@ -35,7 +34,7 @@ public class SuggestionEngine {
      * Look up the passed in word in the Map of words loaded from the source file.
      */
     private Stream<String> known(Stream<String> words) {
-        return words.filter( (word) -> getWordMap().containsKey(word) );
+        return words.filter( (word) -> getWordSuggestionDB().containsKey(word) );
     }
 
     /**
@@ -46,11 +45,9 @@ public class SuggestionEngine {
      */
     public void loadDictionaryData(Path dictionaryFile) throws IOException {
         Stream.of(new String(Files.readAllBytes( dictionaryFile )).toLowerCase().split("\\n")).forEach( (word) ->{
-            getWordMap().compute( word, (k, v) -> v == null ? 1 : v + 1  );
+            getWordSuggestionDB().compute( word, (k, v) -> v == null ? 1 : v + 1  );
         });
     }
-
-
 
     /**
      * Will generate a list of suggested corrections, limited by the top 10 most likely for the given word.
@@ -58,7 +55,7 @@ public class SuggestionEngine {
      * @return a String of words delimited by '\n' or an empty string if word is correct
      */
     public String generateSuggestions(String word) {
-        if (getWordMap().containsKey(word)) {
+        if (getWordSuggestionDB().containsKey(word)) {
             return "";
         }
 
@@ -79,8 +76,16 @@ public class SuggestionEngine {
                 .collect(Collectors.joining("\n"));
     }
 
-    public Map<String, Integer> getWordMap() {
-        return wordMap;
+    public Map<String, Integer> getWordSuggestionDB() {
+        if (wordSuggestionDB == null) {
+            wordSuggestionDB = new SuggestionsDatabase();
+        }
+
+        return wordSuggestionDB.getWordMap();
+    }
+
+    public void setWordSuggestionDB(SuggestionsDatabase wordSuggestionDB) {
+        this.wordSuggestionDB = wordSuggestionDB;
     }
 
     public static void main(String[] args) throws Exception {
